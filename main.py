@@ -4,7 +4,7 @@ from discord.ext.commands import CommandNotFound
 import time
 import os
 
-from functions import get_NSSTATUS,get_NSSTART,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM
+from functions import get_LinDISK,get_LinDrives,get_NSSTATUS,get_NSSTART,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -39,29 +39,34 @@ async def RAM(ctx):
 @client.command()
 async def DRIVES(ctx):
     drives = []
-    drives = get_Drives()
+    drives = get_LinDrives()
     driveavailable = "List of current drives installed:"
     for d in drives:
-        driveavailable += '\n {0}'.format(d)
+        driveavailable += '\n-{0}'.format(d)
     await ctx.send(f'```{driveavailable}```')
 
 
+
+# @client.command()
+# async def DISK(ctx, arg):
+#     arg += ":"
+#     drives = []
+#     drives = get_Drives()
+#     found = False
+#     for d in drives:
+#         if(arg == d):
+#             found = True
+
+#     if(found == True):
+#         await ctx.send(f'```{get_DISK(arg)}```')
+#     else:
+#         notfound = 'Drive {0} was not found! Please see list Below'.format(arg)
+#         await ctx.send(f'```{notfound}```')
+#         await DRIVES(ctx)
+
 @client.command()
 async def DISK(ctx, arg):
-    arg += ":"
-    drives = []
-    drives = get_Drives()
-    found = False
-    for d in drives:
-        if(arg == d):
-            found = True
-
-    if(found == True):
-        await ctx.send(f'```{get_DISK(arg)}```')
-    else:
-        notfound = 'Drive {0} was not found! Please see list Below'.format(arg)
-        await ctx.send(f'```{notfound}```')
-        await DRIVES(ctx)
+    await ctx.send(f'```{get_LinDISK(arg)}```')
 
 
 @client.command()
