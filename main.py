@@ -8,9 +8,10 @@ from functions import get_LinDISK,get_LinDrives,get_NSSTATUS,get_NSSTART,get_CPU
 from dotenv import load_dotenv
 load_dotenv()
 
+# Setting what prefix will be used to call commands
 client = commands.Bot(command_prefix='?')
 
-
+# Command Handler to check for errors and display message and send Help Display Command
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
@@ -19,18 +20,18 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=em)
         await HELP(ctx)
 
-
+# Displaying in console that Bot is running and connected
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
     await client.change_presence(activity=discord.Game(name="Recording Stats"))
 
-
+# Cpu Command to display CPU Specs
 @client.command()
 async def CPU(ctx):
     await ctx.send(f'```{get_CPU()}```')
 
-
+# Ram Commad to display RAM Specs
 @client.command()
 async def RAM(ctx):
     await ctx.send(f'```{get_RAM()}```')
@@ -68,16 +69,17 @@ async def DRIVES(ctx):
 async def DISK(ctx, arg):
     await ctx.send(f'```{get_LinDISK(arg)}```')
 
-
-@client.command()
-async def NETCON(ctx):
-    await ctx.send(f'```{get_NETWORKCONNECTIONS()}```')
+# Fix This as it is not working
+# @client.command()
+# async def NETCON(ctx):
+#     await ctx.send(f'```{get_NETWORKCONNECTIONS()}```')
 
 
 @client.command()
 async def NETIO(ctx):
     await ctx.send(f'```{get_NETWORKIO()}```')
 
+# Commands Display for Game Server 
 @client.command()
 async def GAMESERVER(ctx):
     em = discord.Embed(
@@ -106,7 +108,8 @@ async def GAMESERVER(ctx):
         value="`?COD4SO`",
         inline=True)
     await ctx.send(embed=em)
-    
+
+# Commands Display for Cod4 Public Server  
 @client.command()
 async def COD4NS(ctx):
     em = discord.Embed(
@@ -135,7 +138,8 @@ async def COD4NS(ctx):
         value="`?NSSTATUS`",
         inline=True)
     await ctx.send(embed=em)    
-    
+
+# Start Command for COD4 Public Server   
 @client.command()
 async def NSSTART(ctx):
 	value = get_NSSTART()
@@ -147,7 +151,7 @@ async def NSSTART(ctx):
 		await ctx.send(f'```Server Failed to Start```')
 		await ctx.send(f'```Please retry to start server```')
 	
-	
+# Status Command for COD4 Public Server  	
 @client.command()
 async def NSSTATUS(ctx):
 	value = get_NSSTATUS()
@@ -155,9 +159,8 @@ async def NSSTATUS(ctx):
 		await ctx.send(f'```COD4 Public Server is running!```')
 	elif value == False:
 		await ctx.send(f'```COD4 Public Server is offline!```')
-     
 
-
+# Commands Display for Cod4 Promod Server
 @client.command()
 async def COD4PM(ctx):
     em = discord.Embed(
@@ -186,9 +189,8 @@ async def COD4PM(ctx):
         value="`?PMSTATUS`",
         inline=True)
     await ctx.send(embed=em)  
- 
- 
- 
+
+# Commands Display for Cod4 Sniper Only Server
 @client.command()
 async def COD4SO(ctx):
     em = discord.Embed(
@@ -218,7 +220,7 @@ async def COD4SO(ctx):
         inline=True)
     await ctx.send(embed=em)  
 
-
+# Commands Display for Help to display all available Commands
 @client.command()
 async def HELP(ctx):
     em = discord.Embed(
@@ -261,5 +263,5 @@ async def HELP(ctx):
 
     await ctx.send(embed=em)
 
-
+# Get Token and Run Discord Bot
 client.run(os.getenv('TOKEN'))
