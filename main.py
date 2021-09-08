@@ -4,7 +4,7 @@ from discord.ext.commands import CommandNotFound
 import time
 import os
 
-from functions import get_LinDISK,get_LinDrives,get_NSSTATUS,get_NSSTART,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM
+from functions import get_LinDISK,get_LinDrives,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM ,get_NSSTATUS,get_NSSTART,get_NSSTOP,get_PMSTATUS,get_PMSTART,get_PMSTOP
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -24,7 +24,7 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    await client.change_presence(activity=discord.Game(name="Recording Stats"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
 
 # Cpu Command to display CPU Specs
 @client.command()
@@ -47,7 +47,7 @@ async def DRIVES(ctx):
     await ctx.send(f'```{driveavailable}```')
 
 
-
+# For Windows Server
 # @client.command()
 # async def DISK(ctx, arg):
 #     arg += ":"
@@ -79,35 +79,77 @@ async def DISK(ctx, arg):
 async def NETIO(ctx):
     await ctx.send(f'```{get_NETWORKIO()}```')
 
-# Commands Display for Game Server 
+# Start Command for COD4 Public Server   
 @client.command()
-async def GAMESERVER(ctx):
-    em = discord.Embed(
-        url="https://darren.flystudio.co.za",
-        title=f"Gaming Server Commands List",
-        description=f"Find current list of commands available for FlyStudio Game Server",
-        color=discord.Colour.green(),
-    )
-    em.set_author(
-        name="FlyGaming Commands",
-        icon_url="https://www.nicepng.com/png/full/207-2078307_ubuntu-server-logo-ubuntu.png"
-    )
-    em.set_thumbnail(
-        url="https://www.nicepng.com/png/full/207-2078307_ubuntu-server-logo-ubuntu.png"
-    )
-    em.add_field(
-        name="COD4X Public",
-        value="`?COD4NS`",
-        inline=True)
-    em.add_field(
-        name="COD4X Promod",
-        value="`?COD4PM`",
-        inline=True)
-    em.add_field(
-        name="COD4X Snipers Only",
-        value="`?COD4SO`",
-        inline=True)
-    await ctx.send(embed=em)
+async def NSSTART(ctx):
+	value = get_NSSTART()
+	if value == True:
+		await ctx.send(f'```Starting Server```')
+		time.sleep(3)
+		await ctx.send(f'```Server is now Running```')
+	elif value == False:
+		await ctx.send(f'```Server Failed to Start```')
+		await ctx.send(f'```Please retry to start server```')
+	
+# Status Command for COD4 Public Server  	
+@client.command()
+async def NSSTATUS(ctx):
+	value = get_NSSTATUS()
+	if value == True:
+		await ctx.send(f'```COD4 Public Server is running!```')
+	elif value == False:
+		await ctx.send(f'```COD4 Public Server is offline!```')
+
+# Stop Command for COD4 Public Server
+@client.command()
+async def NSSTOP(ctx):
+    result = get_NSSTATUS()
+    if result == True:
+        res = get_NSSTOP()
+        if res == True:
+            await ctx.send(f'```COD4 Public Server Shutting Down```')
+            time.sleep(3)
+            await ctx.send(f'```COD4 Public Server Now Offline```')
+        elif res == False:
+            await ctx.send(f'```Failed to shutdown COD4 Public Server```')
+    elif result == False:
+        await ctx.send(f'```COD4 Public Server is already Offline```')
+
+# Start Command for COD4 Promod Server   
+@client.command()
+async def PMSTART(ctx):
+	value = get_PMSTART()
+	if value == True:
+		await ctx.send(f'```Starting Server```')
+		time.sleep(3)
+		await ctx.send(f'```Server is now Running```')
+	elif value == False:
+		await ctx.send(f'```Server Failed to Start```')
+		await ctx.send(f'```Please retry to start server```')
+	
+# Status Command for COD4 Promod Server  	
+@client.command()
+async def PMSTATUS(ctx):
+	value = get_PMSTATUS()
+	if value == True:
+		await ctx.send(f'```COD4 Promod Server is running!```')
+	elif value == False:
+		await ctx.send(f'```COD4 Promod Server is offline!```')
+
+# Stop Command for COD4 Promod Server
+@client.command()
+async def PMSTOP(ctx):
+    result = get_PMSTATUS()
+    if result == True:
+        res = get_PMSTOP()
+        if res == True:
+            await ctx.send(f'```COD4 Promod Server Shutting Down```')
+            time.sleep(3)
+            await ctx.send(f'```COD4 Promod Server Now Offline```')
+        elif res == False:
+            await ctx.send(f'```Failed to shutdown COD4 Promod Server```')
+    elif result == False:
+        await ctx.send(f'```COD4 Promod Server is already Offline```')
 
 # Commands Display for Cod4 Public Server  
 @client.command()
@@ -139,27 +181,6 @@ async def COD4NS(ctx):
         inline=True)
     await ctx.send(embed=em)    
 
-# Start Command for COD4 Public Server   
-@client.command()
-async def NSSTART(ctx):
-	value = get_NSSTART()
-	if value == True:
-		await ctx.send(f'```Starting Server```')
-		time.sleep(3)
-		await ctx.send(f'```Server is now Running```')
-	elif value == False:
-		await ctx.send(f'```Server Failed to Start```')
-		await ctx.send(f'```Please retry to start server```')
-	
-# Status Command for COD4 Public Server  	
-@client.command()
-async def NSSTATUS(ctx):
-	value = get_NSSTATUS()
-	if value == True:
-		await ctx.send(f'```COD4 Public Server is running!```')
-	elif value == False:
-		await ctx.send(f'```COD4 Public Server is offline!```')
-
 # Commands Display for Cod4 Promod Server
 @client.command()
 async def COD4PM(ctx):
@@ -171,10 +192,10 @@ async def COD4PM(ctx):
     )
     em.set_author(
         name="FlyGaming Commands",
-        icon_url="https://www.nicepng.com/png/full/207-2078307_ubuntu-server-logo-ubuntu.png"
+        icon_url="https://i.imgur.com/CDWxjUZ.jpg"
     )
     em.set_thumbnail(
-        url="https://www.nicepng.com/png/full/207-2078307_ubuntu-server-logo-ubuntu.png"
+        url="https://i.imgur.com/CDWxjUZ.jpg"
     )
     em.add_field(
         name="Start Server",
@@ -188,7 +209,7 @@ async def COD4PM(ctx):
         name="Server Status",
         value="`?PMSTATUS`",
         inline=True)
-    await ctx.send(embed=em)  
+    await ctx.send(embed=em)
 
 # Commands Display for Cod4 Sniper Only Server
 @client.command()
@@ -220,21 +241,77 @@ async def COD4SO(ctx):
         inline=True)
     await ctx.send(embed=em)  
 
-# Commands Display for Help to display all available Commands
+# Commands Display for Game Server 
 @client.command()
-async def HELP(ctx):
+async def GAMESERVER(ctx):
     em = discord.Embed(
         url="https://darren.flystudio.co.za",
-        title=f"Server01 Commands List",
-        description=f"Find current list of commands available for Server01 Bot",
+        title=f"Gaming Server Commands List",
+        description=f"Find current list of commands available for FlyStudio Game Server",
         color=discord.Colour.green(),
     )
     em.set_author(
-        name="Server 01 Commands",
+        name="FlyGaming Commands",
         icon_url="https://www.nicepng.com/png/full/207-2078307_ubuntu-server-logo-ubuntu.png"
     )
     em.set_thumbnail(
         url="https://www.nicepng.com/png/full/207-2078307_ubuntu-server-logo-ubuntu.png"
+    )
+    em.add_field(
+        name="COD4X Public",
+        value="`?COD4NS`",
+        inline=True)
+    em.add_field(
+        name="COD4X Promod",
+        value="`?COD4PM`",
+        inline=True)
+    em.add_field(
+        name="COD4X Snipers Only",
+        value="`?COD4SO`",
+        inline=True)
+    await ctx.send(embed=em)
+
+# Commands Display for FlyStudio Server
+@client.command()
+async def FLYSTUDIO(ctx):
+    em = discord.Embed(
+        url="https://darren.flystudio.co.za",
+        title=f"Ubuntu Commands List",
+        description=f"Find current list of commands available for FlyStudio Server",
+        color=discord.Colour.green(),
+    )
+    em.set_author(
+        name="FlyStudio Commands",
+        icon_url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.set_thumbnail(
+        url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.add_field(
+        name="FTP Details",
+        value="`?FTP`",
+        inline=True)
+    em.add_field(
+        name="VPN Details",
+        value="`?VPN`",
+        inline=True)
+    await ctx.send(embed=em) 
+
+# Display Commands for Ubuntu Server
+@client.command()
+async def UBUNTU(ctx):
+    em = discord.Embed(
+        url="https://darren.flystudio.co.za",
+        title=f"Ubuntu Commands List",
+        description=f"Find current list of commands available for Ubuntu Server",
+        color=discord.Colour.green(),
+    )
+    em.set_author(
+        name="FlyUbuntu Commands",
+        icon_url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.set_thumbnail(
+        url="https://i.imgur.com/CDWxjUZ.jpg"
     )
     em.add_field(
         name="CPU Monitor",
@@ -256,12 +333,43 @@ async def HELP(ctx):
         name="Display Drives",
         value="`?DRIVES`",
         inline=True)
+    await ctx.send(embed=em)  
+
+# Commands Display for Help to display all available Commands
+@client.command()
+async def HELP(ctx):
+    em = discord.Embed(
+        url="https://darren.flystudio.co.za",
+        title=f"FlyStudio Bot Commands List",
+        description=f"Find current list of commands available for Bot",
+        color=discord.Colour.green(),
+    )
+    em.set_author(
+        name="FlyStudio Bot Commands",
+        icon_url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.set_thumbnail(
+        url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.add_field(
+        name="Display Ubuntu Commands",
+        value="`?UBUNTU`",
+        inline=True)
+    em.add_field(
+        name="Display Plex Streaming Commands",
+        value="`?PLEX`",
+        inline=True)
     em.add_field(
         name="Display Game Server Commands",
         value="`?GAMESERVER`",
         inline=True)
+    em.add_field(
+        name="Display FlyStudio Commands",
+        value="`?FLYSTUDIO`",
+        inline=True)
 
     await ctx.send(embed=em)
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
 
 # Get Token and Run Discord Bot
 client.run(os.getenv('TOKEN'))
