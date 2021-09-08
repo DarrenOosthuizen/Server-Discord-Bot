@@ -58,15 +58,42 @@ def get_DISK(path):
         total, used, free, path)
     return(combined)
 
+def get_LinDISK(path):
+    cmd = "df / -h"
+    result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    value = result.stdout.read().decode("utf-8")
+    dskArray = value.splitlines()
+    for x in range(1,(len(dskArray))):
+        dskItems = dskArray[x].split()
+        diskvalue = dskItems[0].split('/')[2]
+        if path == diskvalue:
+            combined = "{4} Drive Readings: \nTotal Capacity: {0}GB\nCurrently In Use: {1}GB\nFree Space: {2}GB\nPercentage : {3}%".format(
+        dskItems[1][0:(len(dskItems[1])-1)], dskItems[2][0:(len(dskItems[2])-1)], dskItems[3][0:(len(dskItems[3])-1)], dskItems[4][0:(len(dskItems[4])-1)],path)
+    return(combined)
+
+        
+     
+
 def get_Drives():
     disks = []
     drives = []
     disks = psutil.disk_partitions(all=False)
     for d in disks:
         if(d.fstype=="NTFS"):
-            drives.append(d.device[0:2])
-    
+            drives.append(d.device[0:2])    
     return(drives)
+
+def get_LinDrives():
+    diskPaths = []
+    cmd = "df / -h"
+    result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    value = result.stdout.read().decode("utf-8")
+    dskArray = value.splitlines()
+    for x in range(1,(len(dskArray))):
+        dskItems = dskArray[x].split()
+        diskPath = dskItems[0].split('/')[2]
+        diskPaths.append(diskPath)
+    return(diskPaths)   
 
 
 def get_NETWORKIO():
