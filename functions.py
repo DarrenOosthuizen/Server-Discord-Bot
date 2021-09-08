@@ -30,7 +30,56 @@ def get_NSSTATUS():
 	else: 
 		return(False)
 
-	
+
+def get_NSSTOP():
+    try:
+        cmd = "screen -X -S Cod4Normal quit"
+        os.system(cmd)
+        result = get_NSSTATUS()
+        if result == True:
+            return(False)
+        else:
+            return(True)
+    except Exception as e:
+    	return(False)	
+
+def get_PMSTART():
+    try:
+    	cmd = "(cd ~/Docker/Call-Of-Duty/Mods-Server/ ; ./promod.sh)"
+    	os.system(cmd)
+    	return(True)
+    except Exception as e:
+    	return(False)
+    	
+def get_PMSTATUS():
+	found = False
+	cmd = "screen -ls"
+	result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+	value = result.stdout.read()
+	resArray = value.splitlines()
+	for x in range(1,(len(resArray)-1)):
+		screen = resArray[x].split()
+		finalscreen = screen[0]
+		finalscreen = finalscreen[5:len(finalscreen)].decode("utf-8")
+		if finalscreen == "Cod4Promod":
+			found = True
+	if found == True:
+		return(True)
+	else: 
+		return(False)
+
+
+def get_PMSTOP():
+    try:
+        cmd = "screen -X -S Cod4Promod quit"
+        os.system(cmd)
+        result = get_PMSTATUS()
+        if result == True:
+            return(False)
+        else:
+            return(True)
+    except Exception as e:
+    	return(False)	
 
 
 def get_CPU():
@@ -58,6 +107,7 @@ def get_DISK(path):
         total, used, free, path)
     return(combined)
 
+
 def get_LinDISK(path):
     cmd = "df / -h"
     result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
@@ -68,17 +118,15 @@ def get_LinDISK(path):
         diskvalue = dskItems[0].split('/')[2]
         if path == diskvalue:
             combined = "{4} Drive Readings: \nTotal Capacity: {0}GB\nCurrently In Use: {1}GB\nFree Space: {2}GB\nPercentage : {3}%".format(
-        dskItems[1][0:(len(dskItems[1])-1)], dskItems[2][0:(len(dskItems[2])-1)], dskItems[3][0:(len(dskItems[3])-1)], dskItems[4][0:(len(dskItems[4])-1)],path)
+        dskItems[1][0:(len(dskItems[1])-1)], dskItems[2][0:(len(dskItems[2])-1)], dskItems[3][0:(len(dskItems[3])-1)], dskItems[4][0:(len(dskItems[4])-1)],path)   
     return(combined)
 
-        
-     
 
 def get_Drives():
     disks = []
     drives = []
     disks = psutil.disk_partitions(all=False)
-    for d in disks:
+    for d in disks: 
         if(d.fstype=="NTFS"):
             drives.append(d.device[0:2])    
     return(drives)
