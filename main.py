@@ -26,25 +26,7 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(client))
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
 
-# Cpu Command to display CPU Specs
-@client.command()
-async def CPU(ctx):
-    await ctx.send(f'```{get_CPU()}```')
 
-# Ram Commad to display RAM Specs
-@client.command()
-async def RAM(ctx):
-    await ctx.send(f'```{get_RAM()}```')
-
-
-@client.command()
-async def DRIVES(ctx):
-    drives = []
-    drives = get_LinDrives()
-    driveavailable = "List of current drives installed:"
-    for d in drives:
-        driveavailable += '\n-{0}'.format(d)
-    await ctx.send(f'```{driveavailable}```')
 
 
 # For Windows Server
@@ -65,9 +47,38 @@ async def DRIVES(ctx):
 #         await ctx.send(f'```{notfound}```')
 #         await DRIVES(ctx)
 
+#region Ubuntu Server Commands
+# Command to display CPU Specs
+@client.command()
+async def CPU(ctx):
+    await ctx.send(f'```{get_CPU()}```')
+
+# Command to display RAM Specs
+@client.command()
+async def RAM(ctx):
+    await ctx.send(f'```{get_RAM()}```')
+
+# Command to get all Drives in the server
+@client.command()
+async def DRIVES(ctx):
+    drives = []
+    drives = get_LinDrives()
+    driveavailable = "List of current drives installed:"
+    for d in drives:
+        driveavailable += '\n-{0}'.format(d)
+    await ctx.send(f'```{driveavailable}```')
+
+# Command to get Disk Info
 @client.command()
 async def DISK(ctx, arg):
     await ctx.send(f'```{get_LinDISK(arg)}```')
+
+# Command to Display Network IO
+@client.command()
+async def NETIO(ctx):
+    await ctx.send(f'```{get_NETWORKIO()}```')
+#endregion
+
 
 # Fix This as it is not working
 # @client.command()
@@ -75,10 +86,9 @@ async def DISK(ctx, arg):
 #     await ctx.send(f'```{get_NETWORKCONNECTIONS()}```')
 
 
-@client.command()
-async def NETIO(ctx):
-    await ctx.send(f'```{get_NETWORKIO()}```')
 
+
+#region Public Server Commands
 # Start Command for COD4 Public Server   
 @client.command()
 async def NSSTART(ctx):
@@ -90,7 +100,7 @@ async def NSSTART(ctx):
 	elif value == False:
 		await ctx.send(f'```Server Failed to Start```')
 		await ctx.send(f'```Please retry to start server```')
-	
+
 # Status Command for COD4 Public Server  	
 @client.command()
 async def NSSTATUS(ctx):
@@ -114,7 +124,9 @@ async def NSSTOP(ctx):
             await ctx.send(f'```Failed to shutdown COD4 Public Server```')
     elif result == False:
         await ctx.send(f'```COD4 Public Server is already Offline```')
+#endregion
 
+#region Promod Server Commands
 # Start Command for COD4 Promod Server   
 @client.command()
 async def PMSTART(ctx):
@@ -150,7 +162,9 @@ async def PMSTOP(ctx):
             await ctx.send(f'```Failed to shutdown COD4 Promod Server```')
     elif result == False:
         await ctx.send(f'```COD4 Promod Server is already Offline```')
+#endregion
 
+#region COD4 Server Commands
 # Commands Display for Cod4 Public Server  
 @client.command()
 async def COD4NS(ctx):
@@ -240,7 +254,9 @@ async def COD4SO(ctx):
         value="`?SOSTATUS`",
         inline=True)
     await ctx.send(embed=em)  
+#endregion
 
+#region Display Commands
 # Commands Display for Game Server 
 @client.command()
 async def GAMESERVER(ctx):
@@ -370,6 +386,8 @@ async def HELP(ctx):
 
     await ctx.send(embed=em)
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
+#endregion
+
 
 # Get Token and Run Discord Bot
 client.run(os.getenv('TOKEN'))
