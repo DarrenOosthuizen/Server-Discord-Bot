@@ -4,7 +4,30 @@ import subprocess
 import os
 import sys
 
+#region Darren WOL Functions
+def get_WOLAWAKE():
+    cmd = "ping -c 2 192.168.0.116"
+    result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    value = result.stdout.read().decode("utf-8")
 
+    lines = value.splitlines()
+    result = lines[5].split(',')[1][1:2]
+    if result == '2':
+        return(True)
+    else:
+        return(False)
+
+def get_WOL():
+    result = get_WOLAWAKE()
+    if result == True:
+        return("Darren-PC is already on!")
+    else:
+        cmd = ("sudo /home/flysubuntuadmin/WOL.sh")
+        os.system(cmd)
+        return("Waking up Darren-PC ")
+#endregion
+
+#region Public Server Functions
 def get_NSSTART():
     try:
     	cmd = "(cd ~/Docker/Call-Of-Duty/Normal-Server/ ; ./cod4.sh)"
@@ -14,21 +37,21 @@ def get_NSSTART():
     	return(False)
     	
 def get_NSSTATUS():
-	found = False
-	cmd = "screen -ls"
-	result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-	value = result.stdout.read()
-	resArray = value.splitlines()
-	for x in range(1,(len(resArray)-1)):
-		screen = resArray[x].split()
-		finalscreen = screen[0]
-		finalscreen = finalscreen[5:len(finalscreen)].decode("utf-8")
-		if finalscreen == "Cod4Normal":
-			found = True
-	if found == True:
-		return(True)
-	else: 
-		return(False)
+    found = False
+    cmd = "screen -ls"
+    result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    value = result.stdout.read()
+    resArray = value.splitlines()
+    for x in range(1,(len(resArray)-1)):
+        screen = resArray[x].split()
+        finalscreen = screen[0].decode("utf-8")
+        finalscreen = finalscreen.split('.')[1]
+        if finalscreen == "Cod4Normal":
+            found = True
+    if found == True:
+        return(True)
+    else:
+        return(False)
 
 
 def get_NSSTOP():
@@ -43,6 +66,9 @@ def get_NSSTOP():
     except Exception as e:
     	return(False)	
 
+#endregion
+
+#region Promod Server Functions
 def get_PMSTART():
     try:
     	cmd = "(cd ~/Docker/Call-Of-Duty/Mods-Server/ ; ./promod.sh)"
@@ -52,21 +78,21 @@ def get_PMSTART():
     	return(False)
     	
 def get_PMSTATUS():
-	found = False
-	cmd = "screen -ls"
-	result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-	value = result.stdout.read()
-	resArray = value.splitlines()
-	for x in range(1,(len(resArray)-1)):
-		screen = resArray[x].split()
-		finalscreen = screen[0]
-		finalscreen = finalscreen[5:len(finalscreen)].decode("utf-8")
-		if finalscreen == "Cod4Promod":
-			found = True
-	if found == True:
-		return(True)
-	else: 
-		return(False)
+    found = False
+    cmd = "screen -ls"
+    result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    value = result.stdout.read()
+    resArray = value.splitlines()
+    for x in range(1,(len(resArray)-1)):
+        screen = resArray[x].split()
+        finalscreen = screen[0].decode("utf-8")
+        finalscreen = finalscreen.split('.')[1]
+        if finalscreen == "Cod4Promod":
+            found = True
+    if found == True:
+        return(True)
+    else:
+        return(False)
 
 
 def get_PMSTOP():
@@ -80,8 +106,9 @@ def get_PMSTOP():
             return(True)
     except Exception as e:
     	return(False)	
+#endregion
 
-
+#region Ubuntu Server Functions
 def get_CPU():
     frequency = psutil.cpu_freq()
     percent = psutil.cpu_percent(interval=None)
@@ -145,8 +172,22 @@ def get_LinDrives():
 
 
 def get_NETWORKIO():
-    return(psutil.net_io_counters())
+    dataNetwork = psutil.net_io_counters()
+    dataSent = float(round(((dataNetwork.bytes_sent )/1024/1024),2))
+    dataRecv = float(round(((dataNetwork.bytes_recv )/1024/1024), 2))
+    print(dataRecv)
+    packetsSent = dataNetwork.packets_sent
+    packetsRecv = dataNetwork.packets_recv
+    dataErrIn = dataNetwork.errin
+    dataErrOut = dataNetwork.errout
+    dataDropIn = dataNetwork.dropin
+    dataDropOut = dataNetwork.dropout
+    Combined = "Network Stats: \nData Sent: {0}MB \nDate Recieved: {1}MB \nPackets Sent: {2} \nPackets Recieved: {3} \nData Errors In: {4} \nData Errors Out: {5} \nSending Packets Dropped: {6} \nRecieving Packets Dropped: {7}".format(dataSent,dataRecv,packetsSent,packetsRecv,dataErrIn,dataErrOut,dataDropIn,dataDropOut)
+    print(Combined)
+    return(Combined)
 
 
 def get_NETWORKCONNECTIONS():
     return(psutil.net_connections())
+
+#endregion
