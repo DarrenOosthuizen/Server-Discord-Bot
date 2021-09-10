@@ -33,5 +33,8 @@ await client.change_presence(status=discord.Status.dnd)
 
 
 
-
-
+# View Channel and Author
+```python
+await ctx.send(ctx.channel.id)
+await ctx.send(ctx.author.id)
+```
