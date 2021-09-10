@@ -3,8 +3,9 @@ from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 import time
 import os
+import asyncio
 
-from functions import get_LinDISK,get_LinDrives,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM ,get_NSSTATUS,get_NSSTART,get_NSSTOP,get_PMSTATUS,get_PMSTART,get_PMSTOP
+from functions import get_WOL,get_LinDISK,get_LinDrives,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM ,get_NSSTATUS,get_NSSTART,get_NSSTOP,get_PMSTATUS,get_PMSTART,get_PMSTOP
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -15,8 +16,7 @@ client = commands.Bot(command_prefix='?')
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        em = discord.Embed(title=f"INVALID COMMAND",
-                           description=f"Command : {ctx.message.content} not found.", color=discord.Colour.red())
+        em = discord.Embed(title=f"INVALID COMMAND",description=f"Command : {ctx.message.content} not found.", color=discord.Colour.red())
         await ctx.send(embed=em)
         await HELP(ctx)
 
@@ -26,8 +26,18 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(client))
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
 
+#region Darren-PC Commands
+# Command for switching on Darren PC
+@client.command()
+async def WOL(ctx):
+    ADMINID = int(os.getenv('ADMINID'))
+    role = discord.utils.get(ctx.guild.roles, id= ADMINID)
+    if role in ctx.author.roles:
+        await ctx.send(f'```{get_WOL()}```')
+    else:
+        await ctx.send(f'```Sorry {ctx.author} but you do not have the correct permissions to run the Command!! Please aquire the Admin Role to perform this command!```')
 
-
+#endregion
 
 # For Windows Server
 # @client.command()
@@ -46,6 +56,14 @@ async def on_ready():
 #         notfound = 'Drive {0} was not found! Please see list Below'.format(arg)
 #         await ctx.send(f'```{notfound}```')
 #         await DRIVES(ctx)
+
+# Fix This as it is not working
+# @client.command()
+# async def NETCON(ctx):
+#     await ctx.send(f'```{get_NETWORKCONNECTIONS()}```')
+
+
+
 
 #region Ubuntu Server Commands
 # Command to display CPU Specs
@@ -79,27 +97,22 @@ async def NETIO(ctx):
     await ctx.send(f'```{get_NETWORKIO()}```')
 #endregion
 
-
-# Fix This as it is not working
-# @client.command()
-# async def NETCON(ctx):
-#     await ctx.send(f'```{get_NETWORKCONNECTIONS()}```')
-
-
-
-
 #region Public Server Commands
 # Start Command for COD4 Public Server   
 @client.command()
 async def NSSTART(ctx):
-	value = get_NSSTART()
-	if value == True:
-		await ctx.send(f'```Starting Server```')
-		time.sleep(3)
-		await ctx.send(f'```Server is now Running```')
-	elif value == False:
-		await ctx.send(f'```Server Failed to Start```')
-		await ctx.send(f'```Please retry to start server```')
+    result = GameCheck(ctx)
+    if result == True:
+            value = get_NSSTART()
+            if value == True:
+                await ctx.send(f'```Starting Server```')
+                time.sleep(3)
+                await ctx.send(f'```Server is now Running```')
+            elif value == False:
+                await ctx.send(f'```Server Failed to Start```')
+                await ctx.send(f'```Please retry to start server```')
+    else:
+        await ctx.send(f'```Sorry {ctx.author} but you do not have the permissions to Start the Server! Contact a Game Admin to start it!```')
 
 # Status Command for COD4 Public Server  	
 @client.command()
@@ -113,31 +126,39 @@ async def NSSTATUS(ctx):
 # Stop Command for COD4 Public Server
 @client.command()
 async def NSSTOP(ctx):
-    result = get_NSSTATUS()
-    if result == True:
-        res = get_NSSTOP()
-        if res == True:
-            await ctx.send(f'```COD4 Public Server Shutting Down```')
-            time.sleep(3)
-            await ctx.send(f'```COD4 Public Server Now Offline```')
-        elif res == False:
-            await ctx.send(f'```Failed to shutdown COD4 Public Server```')
-    elif result == False:
-        await ctx.send(f'```COD4 Public Server is already Offline```')
+    permis = GameCheck(ctx)
+    if permis == True:
+        result = get_NSSTATUS()
+        if result == True:
+            res = get_NSSTOP()
+            if res == True:
+                await ctx.send(f'```COD4 Public Server Shutting Down```')
+                time.sleep(3)
+                await ctx.send(f'```COD4 Public Server Now Offline```')
+            elif res == False:
+                await ctx.send(f'```Failed to shutdown COD4 Public Server```')
+        elif result == False:
+            await ctx.send(f'```COD4 Public Server is already Offline```')
+    else:
+        await ctx.send(f'```Sorry {ctx.author} but you do not have the permissions to Start the Server! Contact a Game Admin to start it!```')
 #endregion
 
 #region Promod Server Commands
 # Start Command for COD4 Promod Server   
 @client.command()
 async def PMSTART(ctx):
-	value = get_PMSTART()
-	if value == True:
-		await ctx.send(f'```Starting Server```')
-		time.sleep(3)
-		await ctx.send(f'```Server is now Running```')
-	elif value == False:
-		await ctx.send(f'```Server Failed to Start```')
-		await ctx.send(f'```Please retry to start server```')
+    result = GameCheck(ctx)
+    if result == True:
+        value = get_PMSTART()
+        if value == True:
+            await ctx.send(f'```Starting Server```')
+            time.sleep(3)
+            await ctx.send(f'```Server is now Running```')
+        elif value == False:
+            await ctx.send(f'```Server Failed to Start```')
+            await ctx.send(f'```Please retry to start server```')
+    elif result == False:
+        await ctx.send(f'```Sorry {ctx.author} but you do not have the permissions to Start the Server! Contact a Game Admin to start it!```')
 	
 # Status Command for COD4 Promod Server  	
 @client.command()
@@ -151,17 +172,21 @@ async def PMSTATUS(ctx):
 # Stop Command for COD4 Promod Server
 @client.command()
 async def PMSTOP(ctx):
-    result = get_PMSTATUS()
-    if result == True:
-        res = get_PMSTOP()
-        if res == True:
-            await ctx.send(f'```COD4 Promod Server Shutting Down```')
-            time.sleep(3)
-            await ctx.send(f'```COD4 Promod Server Now Offline```')
-        elif res == False:
-            await ctx.send(f'```Failed to shutdown COD4 Promod Server```')
-    elif result == False:
-        await ctx.send(f'```COD4 Promod Server is already Offline```')
+    permis = GameCheck(ctx)
+    if permis == True:
+        result = get_PMSTATUS()
+        if result == True:
+            res = get_PMSTOP()
+            if res == True:
+                await ctx.send(f'```COD4 Promod Server Shutting Down```')
+                time.sleep(3)
+                await ctx.send(f'```COD4 Promod Server Now Offline```')
+            elif res == False:
+                await ctx.send(f'```Failed to shutdown COD4 Promod Server```')
+        elif result == False:
+            await ctx.send(f'```COD4 Promod Server is already Offline```')
+    else:
+        await ctx.send(f'```Sorry {ctx.author} but you do not have the permissions to Start the Server! Contact a Game Admin to start it!```')
 #endregion
 
 #region COD4 Server Commands
@@ -194,6 +219,15 @@ async def COD4NS(ctx):
         value="`?NSSTATUS`",
         inline=True)
     await ctx.send(embed=em)    
+
+# Command to check if user has correct permissions to stop and start the server
+def GameCheck(ctx):
+    GAMEADMINID = int(os.getenv('GAMEADMINID'))
+    role = discord.utils.get(ctx.guild.roles, id= GAMEADMINID)
+    if role in ctx.author.roles:
+        return(True)
+    else:
+        return(False)
 
 # Commands Display for Cod4 Promod Server
 @client.command()
@@ -311,6 +345,10 @@ async def FLYSTUDIO(ctx):
         name="VPN Details",
         value="`?VPN`",
         inline=True)
+    em.add_field(
+        name="PLEX Details",
+        value="`?PLEX`",
+        inline=True)
     await ctx.send(embed=em) 
 
 # Display Commands for Ubuntu Server
@@ -388,6 +426,33 @@ async def HELP(ctx):
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
 #endregion
 
+#region FlyStudio Server Commands
+# Command for Displaying Plex Server Details
+@client.command()
+async def PLEX(ctx):
+    await ctx.send(f'```Please find the FlyStudio Plex Streaming Server link below:```')
+    await ctx.send(f'https://www.plex.tv/sign-in/')
+    await ctx.send(f'```Username : plex@flystudio.co.za\nPassword : PlexFlyStudio```')
+
+# Command for Displaying VPN Details
+@client.command()
+async def VPN(ctx):
+    await ctx.send(f'```Please Insert FlyStudio Username so that i can retrieve your details:```')
+    # This will make sure that the response will only be registered if the following
+    # conditions are met:
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel
+        
+    try:
+        msg = await client.wait_for("message", check=check, timeout=30) # 30 seconds to reply
+
+    except asyncio.TimeoutError:
+        await ctx.send(f'```{ctx.author} you have taken too long to respond and have canceled the operation!```')
+    await ctx.send(f'{msg.content}')
+
+# Command for Displaying FTP Details
+
+#endregion
 
 # Get Token and Run Discord Bot
 client.run(os.getenv('TOKEN'))
