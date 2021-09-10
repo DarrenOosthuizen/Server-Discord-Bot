@@ -30,12 +30,12 @@ def get_WOL():
 #region Public Server Functions
 def get_NSSTART():
     try:
-    	cmd = "(cd ~/Docker/Call-Of-Duty/Normal-Server/ ; ./cod4.sh)"
-    	os.system(cmd)
-    	return(True)
+        cmd = "(cd ~/Docker/Call-Of-Duty/Normal-Server/ ; ./cod4.sh)"
+        os.system(cmd)
+        return(True)
     except Exception as e:
-    	return(False)
-    	
+        return(False)
+
 def get_NSSTATUS():
     found = False
     cmd = "screen -ls"
@@ -64,19 +64,20 @@ def get_NSSTOP():
         else:
             return(True)
     except Exception as e:
-    	return(False)	
+        return(False)	
 
 #endregion
 
 #region Promod Server Functions
 def get_PMSTART():
     try:
-    	cmd = "(cd ~/Docker/Call-Of-Duty/Mods-Server/ ; ./promod.sh)"
-    	os.system(cmd)
-    	return(True)
+        cmd = "(cd ~/Docker/Call-Of-Duty/Mods-Server/ ; ./promod.sh)"
+        os.system(cmd)
+        return(True)
     except Exception as e:
-    	return(False)
-    	
+        return(False)
+
+
 def get_PMSTATUS():
     found = False
     cmd = "screen -ls"
@@ -105,7 +106,7 @@ def get_PMSTOP():
         else:
             return(True)
     except Exception as e:
-    	return(False)	
+        return(False)	
 #endregion
 
 #region Ubuntu Server Functions
