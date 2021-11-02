@@ -24,7 +24,7 @@ async def on_command_error(ctx, error):
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="?HELP"))
 
 #region Darren-PC Commands
 # Command for switching on Darren PC
