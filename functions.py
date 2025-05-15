@@ -3,28 +3,29 @@ import string
 import subprocess
 import os
 import sys
+from wakeonlan import send_magic_packet
 
 #region Darren WOL Functions
-def get_WOLAWAKE():
-    cmd = "ping -c 2 192.168.0.116"
+def get_isServerRunning():
+    cmd = "ping -c 2 192.168.1.200"
     result = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
     value = result.stdout.read().decode("utf-8")
 
     lines = value.splitlines()
-    result = lines[5].split(',')[1][1:2]
+    print(lines)
+    result = lines[3].split(',')[1][1:2]
     if result == '2':
         return(True)
     else:
         return(False)
 
-def get_WOL():
-    result = get_WOLAWAKE()
+def get_StartServer():
+    result = get_isServerRunning()
     if result == True:
-        return("Darren-PC is already on!")
+        return True
     else:
-        cmd = ("sudo /home/flysubuntuadmin/WOL.sh")
-        os.system(cmd)
-        return("Waking up Darren-PC ")
+        send_magic_packet("d8:5e:d3:2a:52:5a")
+        return False
 #endregion
 
 #region Public Server Functions

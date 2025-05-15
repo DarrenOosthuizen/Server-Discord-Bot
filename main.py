@@ -4,9 +4,11 @@ from discord.ext.commands import CommandNotFound
 import time
 import os
 import asyncio
+import socket
 
-from functions import get_WOL,get_LinDISK,get_LinDrives,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM ,get_NSSTATUS,get_NSSTART,get_NSSTOP,get_PMSTATUS,get_PMSTART,get_PMSTOP
-from dotenv import load_dotenv
+from functions import get_StartServer,get_LinDISK,get_LinDrives,get_CPU, get_DISK, get_Drives, get_NETWORKCONNECTIONS, get_NETWORKIO, get_RAM ,get_NSSTATUS,get_NSSTART,get_NSSTOP,get_PMSTATUS,get_PMSTART,get_PMSTOP
+import rconclient
+from dotenv import load_dotenv          
 load_dotenv()
 
 # Setting what prefix will be used to call commands
@@ -18,67 +20,108 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         em = discord.Embed(title=f"INVALID COMMAND",description=f"Command : {ctx.message.content} not found.", color=discord.Colour.red())
         await ctx.send(embed=em)
-        await HELP(ctx)
+        await Help(ctx)
 
 # Displaying in console that Bot is running and connected
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="?HELP"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="?Help"))
 
-#region Darren-PC Commands
-# Command for switching on Darren PC
+#region DarrenServer Commands
+# Command for switching on Darren Server
 @client.command()
-async def WOL(ctx):
-    ADMINID = int(os.getenv('ADMINID'))
-    role = discord.utils.get(ctx.guild.roles, id= ADMINID)
+async def startserver(ctx):
+    GAMEADMINID = int(os.getenv('ADMINID'))
+    PALWORLDCHANNELID = int(os.getenv('PALWORLDCHANNELID'))
+    palworldChannel = client.get_channel(PALWORLDCHANNELID)
+    role = discord.utils.get(ctx.guild.roles, id= GAMEADMINID)
+    palworldRole = discord.utils.get(ctx.guild.roles, name = 'Palworld')
+    print(ctx.author.roles)
     if role in ctx.author.roles:
-        await ctx.send(f'```{get_WOL()}```')
+        message = f'{palworldRole.mention} Flystudio Palworld Server is up running'
+        serverRunning = get_StartServer()
+        if serverRunning:
+            await ctx.send('Server is already running!')
+        else:
+            await palworldChannel.send(message)
     else:
-        await ctx.send(f'```Sorry {ctx.author} but you do not have the correct permissions to run the Command!! Please aquire the Admin Role to perform this command!```')
+        await ctx.send(f'```Sorry {ctx.author} but you do not have the correct permissions to run the Command!! Please aquire the correct permissions to perform this command!```')
 
 #endregion
+        
+async def sendUnathorizedResponse(ctx):
+    await ctx.send(f'```Sorry {ctx.author} but you do not have the correct permissions to run the Command!! Please aquire the correct permissions to perform this command!```')
+        
+# Command for switching on Darren Server
+@client.command()
+async def palworld(ctx,command : str):
 
-# For Windows Server
-# @client.command()
-# async def DISK(ctx, arg):
-#     arg += ":"
-#     drives = []
-#     drives = get_Drives()
-#     found = False
-#     for d in drives:
-#         if(arg == d):
-#             found = True
+    adminCommand = isAdminRCONCommand(command)
+    if adminCommand:
+        isServerAdmin = isPalworldServerAdmin(ctx)
+        if isServerAdmin :
+            await sendPalworldRconResponse(ctx,command)
+        else:
+            await sendUnathorizedResponse(ctx,command)
+    else:
+        await sendPalworldRconResponse(ctx,command)
 
-#     if(found == True):
-#         await ctx.send(f'```{get_DISK(arg)}```')
-#     else:
-#         notfound = 'Drive {0} was not found! Please see list Below'.format(arg)
-#         await ctx.send(f'```{notfound}```')
-#         await DRIVES(ctx)
+       
+#endregion
+        
+async def sendPalworldRconResponse(ctx,command):
+    SERVERIP = os.getenv('SERVERIP')
+    SERVERPORT = int(os.getenv('SERVERPORT'))
+    SERVERPASSWORD = os.getenv('SERVERPASSWORD')
+    with rconclient.RCONClient(SERVERIP, SERVERPORT, SERVERPASSWORD) as client:
+        response = client.command(command)
+        await ctx.send(f'{response}') 
+        
+def isPalworldServerAdmin(ctx):
+    ADMINID = int(os.getenv('ADMINID'))
+    role = discord.utils.get(ctx.guild.roles, id= ADMINID)
+    return role in ctx.author.roles
 
-# Fix This as it is not working
-# @client.command()
-# async def NETCON(ctx):
-#     await ctx.send(f'```{get_NETWORKCONNECTIONS()}```')
-
+def isAdminRCONCommand(command : str):
+    return command.lower() == 'info'or command.lower() == 'showplayers'
 
 
 
 #region Ubuntu Server Commands
 # Command to display CPU Specs
 @client.command()
-async def CPU(ctx):
+async def cpu(ctx):
     await ctx.send(f'```{get_CPU()}```')
+
+@client.command()
+async def invite(ctx):
+    em = discord.Embed(
+        url="https://darren.flystudio.co.za",
+        title=f"Discord Invite Link",
+        color=discord.Colour.green(),
+    )
+    em.set_author(
+        name="FlyStudio Commands",
+        icon_url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.set_thumbnail(
+        url="https://i.imgur.com/CDWxjUZ.jpg"
+    )
+    em.add_field(
+        name="Link Below",
+        value="http://discord.flystudio.co.za",
+        inline=True)
+    await ctx.send(embed=em)
 
 # Command to display RAM Specs
 @client.command()
-async def RAM(ctx):
+async def ram(ctx):
     await ctx.send(f'```{get_RAM()}```')
 
 # Command to get all Drives in the server
 @client.command()
-async def DRIVES(ctx):
+async def drives(ctx):
     drives = []
     drives = get_LinDrives()
     driveavailable = "List of current drives installed:"
@@ -88,12 +131,12 @@ async def DRIVES(ctx):
 
 # Command to get Disk Info
 @client.command()
-async def DISK(ctx, arg):
+async def disk(ctx, arg):
     await ctx.send(f'```{get_LinDISK(arg)}```')
 
 # Command to Display Network IO
 @client.command()
-async def NETIO(ctx):
+async def netio(ctx):
     await ctx.send(f'```{get_NETWORKIO()}```')
 #endregion
 
@@ -194,7 +237,7 @@ async def PMSTOP(ctx):
 @client.command()
 async def COD4NS(ctx):
     em = discord.Embed(
-        url="https://darren.flystudio.co.za",
+        url="https://discord.flystudio.co.za",
         title=f"COD4 Public Server Commands List",
         description=f"Find current list of commands available for COD4",
         color=discord.Colour.green(),
@@ -222,7 +265,7 @@ async def COD4NS(ctx):
 
 # Command to check if user has correct permissions to stop and start the server
 def GameCheck(ctx):
-    GAMEADMINID = int(os.getenv('GAMEADMINID'))
+    GAMEADMINID = int(os.getenv('ADMINID'))
     role = discord.utils.get(ctx.guild.roles, id= GAMEADMINID)
     if role in ctx.author.roles:
         return(True)
@@ -323,9 +366,9 @@ async def GAMESERVER(ctx):
 
 # Commands Display for FlyStudio Server
 @client.command()
-async def FLYSTUDIO(ctx):
+async def flystudio(ctx):
     em = discord.Embed(
-        url="https://darren.flystudio.co.za",
+        url="https://discord.flystudio.co.za",
         title=f"Ubuntu Commands List",
         description=f"Find current list of commands available for FlyStudio Server",
         color=discord.Colour.green(),
@@ -339,23 +382,23 @@ async def FLYSTUDIO(ctx):
     )
     em.add_field(
         name="FTP Details",
-        value="`?FTP`",
+        value="`?ftp`",
         inline=True)
     em.add_field(
         name="VPN Details",
-        value="`?VPN`",
+        value="`?vpn`",
         inline=True)
     em.add_field(
         name="PLEX Details",
-        value="`?PLEX`",
+        value="`?plex`",
         inline=True)
     await ctx.send(embed=em) 
 
 # Display Commands for Ubuntu Server
 @client.command()
-async def UBUNTU(ctx):
+async def ubuntu(ctx):
     em = discord.Embed(
-        url="https://darren.flystudio.co.za",
+        url="https://discord.flystudio.co.za",
         title=f"Ubuntu Commands List",
         description=f"Find current list of commands available for Ubuntu Server",
         color=discord.Colour.green(),
@@ -369,19 +412,19 @@ async def UBUNTU(ctx):
     )
     em.add_field(
         name="CPU Monitor",
-        value="`?CPU`",
+        value="`?cpu`",
         inline=True)
     em.add_field(
         name="RAM Levels",
-        value="`?RAM`",
+        value="`?ram`",
         inline=True)
     em.add_field(
         name="Disk Usage",
-        value="`?DISK {Drive Letter}`",
+        value="`?disk {Drive Letter}`",
         inline=True)
     em.add_field(
         name="Display Network Stats",
-        value="`?NETIO`",
+        value="`?netio`",
         inline=True)
     em.add_field(
         name="Display Drives",
@@ -391,9 +434,9 @@ async def UBUNTU(ctx):
 
 # Commands Display for Help to display all available Commands
 @client.command()
-async def HELP(ctx):
+async def Help(ctx):
     em = discord.Embed(
-        url="https://darren.flystudio.co.za",
+        url="https://discord.flystudio.co.za",
         title=f"FlyStudio Bot Commands List",
         description=f"Find current list of commands available for Bot",
         color=discord.Colour.green(),
@@ -406,37 +449,41 @@ async def HELP(ctx):
         url="https://i.imgur.com/CDWxjUZ.jpg"
     )
     em.add_field(
-        name="Display Ubuntu Commands",
-        value="`?UBUNTU`",
-        inline=True)
-    em.add_field(
         name="Display Plex Streaming Commands",
-        value="`?PLEX`",
+        value="`?plex`",
         inline=True)
     em.add_field(
         name="Display Game Server Commands",
-        value="`?GAMESERVER`",
+        value="`?gameserver`",
         inline=True)
     em.add_field(
         name="Display FlyStudio Commands",
-        value="`?FLYSTUDIO`",
+        value="`?flystudio`",
+        inline=True)
+    em.add_field(
+        name="Palworld Server Commands",
+        value="`?palworld`",
+        inline=True)
+    em.add_field(
+        name="Discord Invite Link",
+        value="`?invite`",
         inline=True)
 
     await ctx.send(embed=em)
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="%HELP"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="?Help"))
 #endregion
 
 #region FlyStudio Server Commands
 # Command for Displaying Plex Server Details
 @client.command()
-async def PLEX(ctx):
+async def plex(ctx):
     await ctx.send(f'```Please find the FlyStudio Plex Streaming Server link below:```')
     await ctx.send(f'https://www.plex.tv/sign-in/')
     await ctx.send(f'```Username : plex@flystudio.co.za\nPassword : PlexFlyStudio```')
 
 # Command for Displaying VPN Details
 @client.command()
-async def VPN(ctx):
+async def vpn(ctx):
     await ctx.send(f'```Please Insert FlyStudio Username so that i can retrieve your details:```')
     # This will make sure that the response will only be registered if the following
     # conditions are met:
